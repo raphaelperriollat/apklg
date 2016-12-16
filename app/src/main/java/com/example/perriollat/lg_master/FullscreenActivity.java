@@ -17,28 +17,61 @@ import android.view.View;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 
 public class FullscreenActivity extends AppCompatActivity {
     Context context;
     private static boolean ACTIVITY_OPEN;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
 
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.fullscreen_content);
 
-    private GoogleApiClient client;
+        Log.d("FullscreenActivity", "onCreate");
+
+        context = this;
+
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setContentView(R.layout.activity_fullscreen);
+
+        mVisible = true;
+        mControlsView = findViewById(R.id.fullscreen_content_controls);
+        mContentView = findViewById(R.id.fullscreen_content);
+
+        mContentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggle();
+            }
+        });
+
+        //iniciar o video no metodo onResume
+
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
         ACTIVITY_OPEN = true;
+
+        Log.d("FullscreenActivity", "onResume");
+
+        VideoView video = (VideoView) findViewById(R.id.fullscreen_content);
+        Uri videoPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.video);
+
+        video.setMediaController(new MediaController(this));
+
+        video.setVideoURI(videoPath);
+        video.start();
+        video.requestFocus();
+
+        video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.setLooping(true);
+            }
+        });
     }
 
     @Override
@@ -53,15 +86,16 @@ public class FullscreenActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... params) {
 
+                Log.i("FullscreenActivity", "sleep..");
+
                 try {
-                    int tempoEmMilisegundosParaReabertura = 100;
+                    int tempoEmMilisegundosParaReabertura = 5000;
                     Thread.sleep(tempoEmMilisegundosParaReabertura);
 
                 } catch (Exception e) {
                     e.getLocalizedMessage();
                 }
 
-                Log.i("FullscreenActivity", "sleep..");
                 return null;
             }
 
@@ -75,6 +109,16 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }.execute();
 
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        // Trigger the initial hide() shortly after the activity has been
+        // created, to briefly hint to the user that UI controls
+        // are available.
+        delayedHide(100);
     }
 
     private static final boolean AUTO_HIDE = true;
@@ -135,58 +179,7 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fullscreen_content);
 
-        context = this;
-
-
-        super.onCreate(savedInstanceState);
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_fullscreen);
-
-        mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
-
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
-
-        VideoView video = (VideoView) findViewById(R.id.fullscreen_content);
-        Uri videoPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.video);
-
-        video.setMediaController(new MediaController(this));
-
-        video.setVideoURI(videoPath);
-        video.start();
-        video.requestFocus();
-
-        video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
-            }
-        });
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
-    }
 
     private void toggle() {
         if (mVisible) {
@@ -232,39 +225,5 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("Fullscreen Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
-    }
 }
